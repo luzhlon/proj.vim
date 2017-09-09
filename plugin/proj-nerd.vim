@@ -35,12 +35,13 @@ fun! s:NERDClose()
     while 1
         let b = winbufnr(i)
         if b < 0 | break | endif
-        if bufname(b) =~ '^NERD_tree_\d\+'
+        if getbufvar(b, '&bt') == 'nofile' && getbufvar(b, '&ft') == 'nerdtree'
             let id = win_getid(i)
             call win_gotoid(id)
             if &bt != 'nofile' | continue | endif
             let wi = getwininfo(id)
             winc c | winc p
+            exe b 'bw'
             return wi[0].width
         endif
         let i += 1
