@@ -1,27 +1,21 @@
 " =============================================================================
-" Filename:     plugin/work/viewext.vim
+" Filename:     autoload/proj/nerdtree.vim
 " Author:       luzhlon
 " Function:     Save/Load gui windows state and NERDTree
-" Last Change:  2017/4/08
+" Last Change:  2017-10-03
 " =============================================================================
+
 fun! s:OnSave()
     let w = s:NERDClose()
-    let exts = {
-        \ 'MAX': has('gui_running')?(getwinposx()<0&&getwinposy()<0):0,
-        \ 'NERD': w
-    \ }
-    call proj#config('viewext.json', exts)
+    call proj#config('viewext.json', {'NERD': w})
 endf
 
 fun! s:OnLoad()
     let exts = proj#config('viewext.json')
-    " Maximize the window
-    if exts.MAX && has('gui_running')
-        simalt ~x
-    endif
     if exts.NERD
-        NERDTree
-        exe 'vertical' 'resize' exts.NERD
+        exe empty(bufname('%')) ? 'NERDTree': 'NERDTreeFind'
+        exe 'vert' 'resize' exts.NERD
+        normal zz
         winc p
     endif
 endf
@@ -32,16 +26,21 @@ au User AfterProjLoaded call <SID>OnLoad()
 " Close the NERDTree, return it's window width if exists
 fun! s:NERDClose()
     let i = 0
-    while 1
+    let cur_wid = win_getid()
+    while 1                 " Enum the window's buffer
         let b = winbufnr(i)
         if b < 0 | break | endif
+        " A NerdTree window exists
         if getbufvar(b, '&bt') == 'nofile' && getbufvar(b, '&ft') == 'nerdtree'
             let id = win_getid(i)
             call win_gotoid(id)
             if &bt != 'nofile' | continue | endif
             let wi = getwininfo(id)
-            winc c | winc p
-            exe b 'bw'
+            " Close the NerdTree window
+            set bh=wipe
+            winc c
+            call win_gotoid(cur_wid) " Go back to original window
+            " Return the width of NerdTree window
             return wi[0].width
         endif
         let i += 1
