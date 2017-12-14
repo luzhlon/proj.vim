@@ -12,7 +12,7 @@ endf
 
 fun! s:OnLoad()
     let exts = proj#config('viewext.json')
-    if exts.NERD
+    if !empty(exts) && exts.NERD
         exe empty(bufname('%')) ? 'NERDTree': 'NERDTreeFind'
         exe 'vert' 'resize' exts.NERD
         normal zz
