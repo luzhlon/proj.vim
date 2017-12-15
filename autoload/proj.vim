@@ -73,7 +73,7 @@ fun! proj#save()
     if exists('g:Proj')
         do User BeforeProjSave
         call s:SaveSession()
-        echo getchar()
+        " echo getchar()
     endif
 endf
 
