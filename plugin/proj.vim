@@ -8,7 +8,7 @@
 com! ProjCreate call proj#create()
 com! ProjDelete call proj#delete()
 
-if argc() | break | endif
+if argc() | finish | endif
 
 let s:confdir = getcwd() . '/.vimproj'
 if isdirectory(s:confdir)
