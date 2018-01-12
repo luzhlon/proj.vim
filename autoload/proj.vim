@@ -9,10 +9,10 @@ fun! proj#_init(confdir)
     let g:Proj.workdir = fnamemodify(a:confdir, ':h')
     let g:Proj.confdir = a:confdir
     " non-block the nvim process for nvim-qt can attach it
-    au VimEnter    * sil! call proj#load()
-    au VimLeavePre * call proj#save()
-    au BufWinEnter * call proj#loadview()
-    au BufWinLeave * call proj#saveview()
+    au VimEnter    * nested sil! call proj#load()
+    au VimLeavePre * nested call proj#save()
+    au BufWinEnter * nested call proj#loadview()
+    au BufWinLeave * nested call proj#saveview()
     runtime! autoload/proj/*.vim
 endf
 
@@ -79,22 +79,15 @@ endf
 
 " Load project
 fun! proj#load()
-    call s:LoadSession()
+    sil! exe 'so' g:Proj['confdir'].'/session.vim'
     let &viewdir = g:Proj['confdir'] . '/view'
     do User AfterProjLoaded
 endf
 
 " Save windows and files
 fun! s:SaveSession()
-    set sessionoptions=blank,help,tabpages,unix,buffers
+    set sessionoptions=curdir,blank,help,tabpages,unix,buffers,localoptions,winpos,winsize
     exe 'mks!' (g:Proj.confdir . '/session.vim')
-endf
-
-fun! s:LoadSession()
-    let file = g:Proj.confdir . '/session.vim'
-    if filereadable(file)
-        exe 'so' file
-    endif
 endf
 
 fun! s:readjson(file)

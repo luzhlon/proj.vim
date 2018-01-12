@@ -29,7 +29,7 @@ endf
 
 fun! s:init()
     let vars = proj#config('vars.json')
-    if type(vars) == v:t_dict        
+    if type(vars) == v:t_dict
         let s:vars = {'global': keys(vars.global), 'option': keys(vars.option)}
         call s:load(vars)
     else                " for the first time
