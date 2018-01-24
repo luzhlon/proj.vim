@@ -86,7 +86,7 @@ endf
 
 " Save windows and files
 fun! s:SaveSession()
-    set sessionoptions=curdir,blank,help,tabpages,unix,buffers,localoptions,winpos,winsize
+    set sessionoptions=curdir,blank,help,tabpages,unix,buffers
     exe 'mks!' (g:Proj.confdir . '/session.vim')
 endf
 

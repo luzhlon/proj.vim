@@ -7,21 +7,21 @@
 
 fun! s:OnSave()
     let w = s:NERDClose()
-    call proj#config('viewext.json', {'NERD': w})
+    call proj#config('nerdtree.json', {'width': w})
 endf
 
 fun! s:OnLoad()
-    let exts = proj#config('viewext.json')
-    if !empty(exts) && exts.NERD
+    let exts = proj#config('nerdtree.json')
+    if !empty(exts) && exts.width
+        let g:NERDTreeWinSize = exts.width
         exe empty(&bt) && !empty(@%) ? 'NERDTreeFind': 'NERDTree'
-        exe 'vert' 'resize' exts.NERD
         normal zz
         winc p
     endif
 endf
 
-au User BeforeProjSave  call <SID>OnSave()
-au User AfterProjLoaded call <SID>OnLoad()
+au User BeforeProjSave nested  call <SID>OnSave()
+au User AfterProjLoaded nested call <SID>OnLoad()
 
 " Close the NERDTree, return it's window width if exists
 fun! s:NERDClose()
