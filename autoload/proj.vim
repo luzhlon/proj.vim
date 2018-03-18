@@ -10,7 +10,7 @@ fun! proj#_init(confdir)
     let g:Proj.confdir = a:confdir
     " non-block the nvim process for nvim-qt can attach it
     au VimEnter    * nested sil! call proj#load()
-    au VimLeavePre * nested call proj#save()
+    au VimLeavePre * nested try | call proj#save() | catch | call getchar() | endt
     au BufWinEnter * nested call proj#loadview()
     au BufWinLeave * nested call proj#saveview()
     runtime! autoload/proj/*.vim
