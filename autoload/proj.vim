@@ -13,7 +13,6 @@ fun! proj#_init(confdir)
     au VimLeavePre * nested try | call proj#save() | catch | call getchar() | endt
     au BufWinEnter * nested call proj#loadview()
     au BufWinLeave * nested call proj#saveview()
-    runtime! autoload/proj/*.vim
 endf
 
 " Create project in current directory
@@ -81,7 +80,9 @@ endf
 fun! proj#load()
     sil! exe 'so' g:Proj['confdir'].'/session.vim'
     let &viewdir = g:Proj['confdir'] . '/view'
+    sil! runtime! autoload/proj/*.vim
     do User AfterProjLoaded
+    echom 'Proj Loaded'
 endf
 
 " Save windows and files
