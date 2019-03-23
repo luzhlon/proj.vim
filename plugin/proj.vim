@@ -8,6 +8,8 @@
 com! ProjCreate call proj#create()
 com! ProjDelete call proj#delete()
 
+com! ProjEditConfig exe 'e' g:Proj['confdir'].'/config.vim'
+
 if argc() | finish | endif
 
 let s:confdir = getcwd() . '/.vimproj'

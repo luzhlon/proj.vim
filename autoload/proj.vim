@@ -79,6 +79,7 @@ endf
 " Load project
 fun! proj#load()
     sil! exe 'so' g:Proj['confdir'].'/session.vim'
+    sil! exe 'so' g:Proj['confdir'].'/config.vim'
     let &viewdir = g:Proj['confdir'] . '/view'
     sil! runtime! autoload/proj/*.vim
     do User AfterProjLoaded
