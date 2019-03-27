@@ -1,13 +1,6 @@
 
 fun! s:OnSave()
-    let max = 0
-    if has('nvim')
-        if exists('g:GuiWindowMaximized') && g:GuiWindowMaximized
-            let max = 1
-        endif
-    elseif has('gui_running')
-        let max = getwinposx()<0 && getwinposy()<0
-    endif
+    let max = has('nvim') ? get(g:, 'GuiWindowMaximized') : (has('gui_running') && getwinposx()<0 && getwinposy()<0)
     call proj#config('gui.json', {'max': max})
 endf
 
