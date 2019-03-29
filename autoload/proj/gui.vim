@@ -8,7 +8,7 @@ endf
 fun! s:OnLoad()
     if !exists('g:Proj') | return | endif
     let gui = proj#config('gui.json')
-    let max = get(gui, 'max')
+    let max = !empty(gui) && get(gui, 'max')
 
     if has('nvim')
         if max && exists('*GuiWindowMaximized')
@@ -32,8 +32,10 @@ fun! s:close_spec_windows()
         if bt == 'nofile' || bt == 'quickfix'
             call win_gotoid(win_getid(i))
             " Close the 'nofile' window
-            noautocmd bw!
-            silent! close
+            try | close |
+            catch
+                noautocmd bw!
+            endtry
         endif
     endfor
     " Goto original window
