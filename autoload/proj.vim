@@ -128,7 +128,6 @@ fun! proj#load()
     sil! exe 'so' g:Proj['confdir'].'/session.vim'
     sil! exe 'so' g:Proj['confdir'].'/config.vim'
     let &viewdir = g:Proj['confdir'] . '/view'
-    sil! runtime! autoload/proj/*.vim
     do User AfterProjLoaded
     echom 'Proj Loaded'
 endf
@@ -149,3 +148,5 @@ fun! s:writejson(file, data)
     let file = a:file
     return writefile([json_encode(a:data)], file)
 endf
+
+sil! runtime! autoload/proj/*.vim

@@ -1,14 +1,18 @@
 
-fun! s:OnSave()
+fun! s:on_save()
     let max = has('nvim') ? get(g:, 'GuiWindowMaximized') : (has('gui_running') && getwinposx()<0 && getwinposy()<0)
-    call proj#config('gui.json', {'max': max})
+    let data = {'max': max}
+    if &title && len(&titlestring)
+        let data.title = &titlestring
+    endif
+    call proj#config('gui.json', data)
     call s:close_spec_windows()
 endf
 
-fun! s:OnLoad()
+fun! s:on_load(...)
     if !exists('g:Proj') | return | endif
-    let gui = proj#config('gui.json')
-    let max = !empty(gui) && get(gui, 'max')
+    let data = proj#config('gui.json')
+    let max = !empty(data) && get(data, 'max')
 
     if has('nvim')
         if max && exists('*GuiWindowMaximized')
@@ -18,9 +22,10 @@ fun! s:OnLoad()
         simalt ~x
     endif
 
-    if &title
+    if has_key(data, 'title')
         set title
-        let &titlestring = &titlestring
+        let &titlestring = data['title']
+        let g:titlestring = data['title']
     endif
 endf
 
@@ -44,5 +49,5 @@ fun! s:close_spec_windows()
     endif
 endf
 
-au User BeforeProjSave  call <SID>OnSave()
-au VimEnter * call <SID>OnLoad()
+au User BeforeProjSave  call <sid>on_save()
+au User AfterProjLoaded call <sid>on_load()
