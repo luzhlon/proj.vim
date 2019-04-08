@@ -116,25 +116,24 @@ endf
 " Save project
 fun! proj#save()
     if exists('g:Proj')
+        call proj#add_history(g:Proj['workdir'])
         do User BeforeProjSave
-        call s:SaveSession()
+        call s:save_session()
         " echo getchar()
     endif
 endf
 
 " Load project
 fun! proj#load()
-    call proj#add_history(g:Proj['workdir'])
     sil! exe 'so' g:Proj['confdir'].'/session.vim'
     sil! exe 'so' g:Proj['confdir'].'/config.vim'
     let &viewdir = g:Proj['confdir'] . '/view'
-    sil! runtime! autoload/proj/*.vim
     do User AfterProjLoaded
     echom 'Proj Loaded'
 endf
 
 " Save windows and files
-fun! s:SaveSession()
+fun! s:save_session()
     set sessionoptions=curdir,blank,help,tabpages,unix,buffers
     exe 'mks!' (g:Proj.confdir . '/session.vim')
 endf
@@ -149,3 +148,5 @@ fun! s:writejson(file, data)
     let file = a:file
     return writefile([json_encode(a:data)], file)
 endf
+
+sil! runtime! autoload/proj/*.vim
