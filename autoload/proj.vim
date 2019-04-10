@@ -51,19 +51,6 @@ fun! proj#get_history()
     return filereadable(cache_file) ? readfile(cache_file) : []
 endf
 
-" fun! proj#select_history()
-"     let history_dir = proj#get_history()
-"     if !len(history_dir)
-"         echo 'There is no proj''s history'
-"         return
-"     endif
-
-"     let g:_ = join(history_dir, "\n")
-"     let r = denite#start([{'name': 'output', 'args': ['echo g:_']}])
-"     let g:G = r
-"     if empty(r) | return | endif
-" endf
-
 fun! proj#cd(dir)
     exec 'cd' a:dir
     call proj#_init()
@@ -134,7 +121,13 @@ endf
 
 " Save windows and files
 fun! s:save_session()
-    set sessionoptions=curdir,blank,help,tabpages,unix,buffers
+    for info in getbufinfo({'buflisted': 1})
+        let bnr = info['bufnr']
+        if len(getbufvar(bnr, '&bt'))
+            sil! exec bnr 'bw!'
+        endif
+    endfor
+    set sessionoptions=blank,help,tabpages,unix,buffers,winsize
     exe 'mks!' (g:Proj.confdir . '/session.vim')
 endf
 
