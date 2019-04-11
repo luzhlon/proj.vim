@@ -100,18 +100,75 @@ fun! proj#loadview()
     endt
 endf
 
+fun! s:on_save()
+    let max = has('nvim') ? get(g:, 'GuiWindowMaximized') : (has('gui_running') && getwinposx()<0 && getwinposy()<0)
+    let data = {'max': max}
+    if &title && len(&titlestring)
+        let data.title = &titlestring
+    endif
+    call proj#config('gui.json', data)
+    call s:close_spec_windows()
+endf
+
+fun! s:close_spec_windows()
+    let cur_wid = win_getid()
+    for i in range(1, winnr('$'))
+        " A NerdTree window exists
+        let bt = getbufvar(winbufnr(i), '&bt')
+        if bt == 'nofile' || bt == 'quickfix'
+            call win_gotoid(win_getid(i))
+            " Close the 'nofile' window
+            try | close |
+            catch
+                noautocmd bw!
+            endtry
+        endif
+    endfor
+    " Goto original window
+    if cur_wid != win_getid()
+        call win_gotoid(cur_wid)
+    endif
+endf
+
 " Save project
 fun! proj#save()
     if exists('g:Proj')
         call proj#add_history(g:Proj['workdir'])
+        call s:on_save()
         do User BeforeProjSave
         call s:save_session()
         " echo getchar()
     endif
 endf
 
+fun! s:set_title(title)
+    let &titlestring = a:title
+endf
+
+fun! s:on_load(...)
+    if !exists('g:Proj') | return | endif
+    let data = proj#config('gui.json')
+    let max = !empty(data) && get(data, 'max')
+
+    if has('nvim')
+        if max && exists('*GuiWindowMaximized')
+            call GuiWindowMaximized(1)
+        endif
+    elseif has('gui_running') && max
+        simalt ~x
+    endif
+
+    if has_key(data, 'title')
+        set title
+        let &titlestring = data['title']
+        call timer_start(100, {t->s:set_title(data['title'])})
+        let g:titlestring = data['title']
+    endif
+endf
+
 " Load project
 fun! proj#load()
+    call s:on_load()
     sil! exe 'so' g:Proj['confdir'].'/session.vim'
     sil! exe 'so' g:Proj['confdir'].'/config.vim'
     let &viewdir = g:Proj['confdir'] . '/view'
