@@ -79,25 +79,29 @@ endf
 
 " Save view
 fun! proj#saveview()
-    try
-        if empty(&bt) && &fdm == 'manual'
-            let o = &vop
-            set vop=folds,cursor
-            mkview!
-            let &vop = o
-        endif
-    catch
-        echo v:errmsg
-    endt
+    if get(g:, 'proj_enable_view', 1)
+        try
+            if empty(&bt) && &fdm == 'manual'
+                let o = &vop
+                set vop=folds,cursor
+                mkview!
+                let &vop = o
+            endif
+        catch
+            echo v:errmsg
+        endt
+    endif
 endf
 
 " Load view
 fun! proj#loadview()
-    try
-        sil! loadview
-    catch
-        echo v:errmsg
-    endt
+    if get(g:, 'proj_enable_view', 1)
+        try
+            sil! loadview
+        catch
+            echo v:errmsg
+        endt
+    endif
 endf
 
 fun! s:on_save()
@@ -107,7 +111,9 @@ fun! s:on_save()
         let data.title = &titlestring
     endif
     call proj#config('gui.json', data)
-    call s:close_spec_windows()
+    if get(g:, 'proj_close_specwin', 1)
+        call s:close_spec_windows()
+    endif
 endf
 
 fun! s:close_spec_windows()
