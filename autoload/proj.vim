@@ -104,19 +104,16 @@ fun! proj#loadview()
     endif
 endf
 
-fun! s:on_save()
+fun! s:save_gui_info()
     let max = has('nvim') ? get(g:, 'GuiWindowMaximized') : (has('gui_running') && getwinposx()<0 && getwinposy()<0)
     let data = {'max': max}
     if &title && len(&titlestring)
         let data.title = &titlestring
     endif
     call proj#config('gui.json', data)
-    if get(g:, 'proj_close_specwin', 1)
-        call s:close_spec_windows()
-    endif
 endf
 
-fun! s:close_spec_windows()
+fun! proj#close_specwin()
     let cur_wid = win_getid()
     for i in range(1, winnr('$'))
         " A NerdTree window exists
@@ -140,8 +137,11 @@ endf
 fun! proj#save()
     if exists('g:Proj')
         call proj#add_history(g:Proj['workdir'])
-        call s:on_save()
         do User BeforeProjSave
+        call s:save_gui_info()
+        if get(g:, 'proj_close_specwin', 1)
+            call proj#close_specwin()
+        endif
         call s:save_session()
         " echo getchar()
     endif
