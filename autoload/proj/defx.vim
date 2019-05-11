@@ -11,7 +11,7 @@ fun! s:on_load()
     let conf = proj#config('defx')
     if !empty(conf) && get(conf, 'width')
         exec 'Defx -search=`expand(''%:p'')` -split=topleft -split=vertical -winwidth=' . conf['width']
-        winc p
+        call timer_start(100, {t->&ft=='defx'?execute('winc p'):0})
     endif
 endf
 
