@@ -52,6 +52,8 @@ fun! proj#get_history()
 endf
 
 fun! proj#cd(dir)
+    sil! windo bwipe
+    sil! bufdo bwipe
     exec 'cd' a:dir
     call proj#_init()
     call proj#load()
