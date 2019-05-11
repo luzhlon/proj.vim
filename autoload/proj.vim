@@ -35,14 +35,13 @@ fun! proj#add_history(dir)
         let dir = substitute(dir, '\/', '\', 'g')
         call map(history_dir, {i,v->substitute(v, '\/', '\', 'g')})
     endif
-    for item in history_dir
-        if has('win32')
-            if item ==? dir | return | endif
-        else
-            if item ==# dir | return | endif
+    for i in range(0, len(history_dir) - 1)
+        let item = get(history_dir, i, '')
+        if has('win32') ? item ==? dir: item ==# dir
+            call remove(history_dir, i)
         endif
     endfor
-    call add(history_dir, dir)
+    call insert(history_dir, dir, 0)
     call writefile(history_dir, s:history_path)
 endf
 
@@ -138,7 +137,6 @@ endf
 " Save project
 fun! proj#save()
     if exists('g:Proj')
-        call proj#add_history(g:Proj['workdir'])
         do User BeforeProjSave
         call s:save_gui_info()
         if get(g:, 'proj_close_specwin', 1)
@@ -181,6 +179,7 @@ fun! proj#load()
     sil! exe 'so' g:Proj['confdir'].'/config.vim'
     let &viewdir = g:Proj['confdir'] . '/view'
     do User AfterProjLoaded
+    call proj#add_history(g:Proj['workdir'])
     echom 'Proj Loaded'
 endf
 
