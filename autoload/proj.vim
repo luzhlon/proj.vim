@@ -35,9 +35,15 @@ fun! proj#add_history(dir)
         let dir = substitute(dir, '\/', '\', 'g')
         call map(history_dir, {i,v->substitute(v, '\/', '\', 'g')})
     endif
+
+    " 将最近添加的移到列表头部
     for i in range(0, len(history_dir) - 1)
         let item = get(history_dir, i, '')
         if has('win32') ? item ==? dir: item ==# dir
+            call remove(history_dir, i)
+        endif
+        " 移除不存在的目录
+        if len(item) && !isdirectory(item)
             call remove(history_dir, i)
         endif
     endfor
@@ -143,6 +149,7 @@ fun! proj#save()
             call proj#close_specwin()
         endif
         call s:save_session()
+        call proj#add_history(g:Proj['workdir'])
         " echo getchar()
     endif
 endf
