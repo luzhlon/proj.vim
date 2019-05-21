@@ -2,7 +2,7 @@
 " Init the variable g:Proj
 fun! proj#_init(...)
     let cwd = a:0 ? a:1 : getcwd()
-    let confdir = cwd . '/.vimproj'
+    let confdir = proj#confdir(cwd)
     if !isdirectory(confdir)
         call mkdir(confdir, 'p')
     endif
@@ -56,12 +56,30 @@ fun! proj#get_history()
     return filereadable(cache_file) ? readfile(cache_file) : []
 endf
 
+fun! proj#confdir(...)
+    if a:0
+        return a:1 . (has('win32') ? '\': '/') . g:proj#dirname
+    else
+        return g:Proj['confdir']
+    endif
+endf
+
 fun! proj#cd(dir)
     sil! windo bwipe
     sil! bufdo bwipe
     exec 'cd' a:dir
     call proj#_init()
     call proj#load()
+endf
+
+fun! proj#try_cd(dir)
+    if has_key(g:, 'Proj') | return | endif
+    let confdir = proj#confdir(a:dir)
+    if isdirectory(confdir)
+        call proj#cd(a:dir)
+    else
+        echo confdir 'Not Exists'
+    endif
 endf
 
 " Delete project
@@ -76,7 +94,7 @@ endf
 
 " Read/Write the config from/to file from project's config directory
 fun! proj#config(file, ...)
-    let file = g:Proj.confdir . '/' . a:file
+    let file = g:Proj.confdir . (has('win32') ? '\': '/') . a:file
     if a:0
         return s:writejson(file, a:1)
     else

@@ -5,28 +5,16 @@
 " Last Change:  2017/4/08
 " =============================================================================
 
+let g:proj#dirname = get(g:, 'proj#dirname', '.vimproj')
+
 com! ProjCreate call proj#create()
 com! ProjDelete call proj#delete()
-" com! ProjSelect call proj#select_history()
 com! ProjSelect Denite proj
-
 com! ProjConfig exe 'edit' g:Proj['confdir'].'/config.vim'
+com! -nargs=+ -complete=dir ProjCD call proj#try_cd(<q-args>)
 
 if argc() | finish | endif
 
-let s:confdir = getcwd() . '/.vimproj'
-if isdirectory(s:confdir)
+if isdirectory(proj#confdir(getcwd()))
     call proj#_init()
 endif
-
-fun! s:proj_cd(dir)
-    if has_key(g:, 'Proj') | return | endif
-    let confdir = a:dir . '/.vimproj'
-    if isdirectory(confdir)
-        call proj#cd(a:dir)
-    else
-        echo confdir 'Not Exists'
-    endif
-endf
-
-com! -nargs=+ -complete=dir ProjCD call <sid>proj_cd(<q-args>)
