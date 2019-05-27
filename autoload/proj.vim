@@ -141,11 +141,9 @@ endf
 fun! proj#close_specwin()
     let cur_wid = win_getid()
     for i in range(1, winnr('$'))
-        " A NerdTree window exists
-        let bt = getbufvar(winbufnr(i), '&bt')
-        if bt == 'nofile' || bt == 'quickfix'
+        " Close the special window(buffer)
+        if len(getbufvar(winbufnr(i), '&bt'))
             call win_gotoid(win_getid(i))
-            " Close the 'nofile' window
             try | close |
             catch
                 noautocmd bw!
