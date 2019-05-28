@@ -56,6 +56,10 @@ fun! proj#get_history()
     return filereadable(cache_file) ? readfile(cache_file) : []
 endf
 
+fun! proj#startify_entries()
+    return map(proj#get_history()[0:10], {i,v->{'cmd': 'ProjCD', 'path': v, 'line': v}})
+endf
+
 fun! proj#confdir(...)
     if a:0
         return a:1 . (has('win32') ? '\': '/') . g:proj#dirname
