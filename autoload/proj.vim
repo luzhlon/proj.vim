@@ -133,12 +133,15 @@ fun! proj#loadview()
     endif
 endf
 
-fun! s:save_gui_info()
+fun! s:save_info()
     let max = has('nvim') ? get(g:, 'GuiWindowMaximized') : (has('gui_running') && getwinposx()<0 && getwinposy()<0)
     let data = {'max': max}
     if &title && len(&titlestring)
         let data.title = &titlestring
     endif
+    let data.buffers = map(filter(getbufinfo({'buflisted': 1}),
+                    \ {i,v->empty(getbufvar(v['bufnr'], '&bt'))}),
+                    \ {i,v-> '+' . v['lnum'] . ' ' . fnamemodify(v['name'], ':.')})
     call proj#config('gui.json', data)
 endf
 
@@ -164,7 +167,7 @@ endf
 fun! proj#save()
     if exists('g:Proj')
         do User BeforeProjSave
-        call s:save_gui_info()
+        call s:save_info()
         if get(g:, 'proj_close_specwin', 1)
             call proj#close_specwin()
         endif
@@ -197,6 +200,10 @@ fun! s:on_load(...)
         call timer_start(100, {t->s:set_title(data['title'])})
         let g:titlestring = data['title']
     endif
+
+    for path in get(data, 'buffers')
+        exec 'badd' path
+    endfor
 endf
 
 " Load project
@@ -218,7 +225,7 @@ fun! s:save_session()
             sil! exec bnr 'bw!'
         endif
     endfor
-    set sessionoptions=blank,help,tabpages,unix,buffers,winsize
+    set sessionoptions=blank,help,tabpages,unix,winsize
     exe 'mks!' (g:Proj.confdir . '/session.vim')
 endf
 
