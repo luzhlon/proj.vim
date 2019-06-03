@@ -12,7 +12,7 @@ fun! proj#_init(...)
     let g:Proj.confdir = confdir
     " non-block the nvim process for nvim-qt can attach it
     au VimEnter    * nested sil! call proj#load()
-    au VimLeavePre * nested try | call proj#save() | catch | call getchar() | endt
+    au VimLeavePre * nested call proj#try_save()
     au BufWinEnter * nested call proj#loadview()
     au BufWinLeave * nested call proj#saveview()
 endf
@@ -133,15 +133,35 @@ fun! proj#loadview()
     endif
 endf
 
+fun! s:buf_line_name(info)
+    let v = a:info
+    return '+' . v['lnum'] . ' ' . fnamemodify(v['name'], ':.')
+endf
+
 fun! s:save_info()
     let max = has('nvim') ? get(g:, 'GuiWindowMaximized') : (has('gui_running') && getwinposx()<0 && getwinposy()<0)
     let data = {'max': max}
     if &title && len(&titlestring)
         let data.title = &titlestring
     endif
+
+    " All Buffers
     let data.buffers = map(filter(getbufinfo({'buflisted': 1}),
-                    \ {i,v->empty(getbufvar(v['bufnr'], '&bt'))}),
-                    \ {i,v-> '+' . v['lnum'] . ' ' . fnamemodify(v['name'], ':.')})
+                                \ {i,v->empty(getbufvar(v['bufnr'], '&bt')) && len(v['name'])}),
+                         \ {i,v->s:buf_line_name(v)})
+
+    " Current Buffer
+    for i in range(1, winnr('$'))
+        let bnr = winbufnr(i)
+        if empty(&bt)
+            let data.current = s:buf_line_name(getbufinfo(bufnr('%'))[0])
+            break
+        elseif empty(getbufvar(bnr, '&bt'))
+            let data.current = s:buf_line_name(getbufinfo(bnr)[0])
+            break
+        endif
+    endfor
+
     call proj#config('gui.json', data)
 endf
 
@@ -161,6 +181,15 @@ fun! proj#close_specwin()
     if cur_wid != win_getid()
         call win_gotoid(cur_wid)
     endif
+endf
+
+fun! proj#try_save()
+    try
+        call proj#save()
+    catch
+        echoerr v:throwpoint v:exception
+        call getchar()
+    endt
 endf
 
 " Save project
@@ -201,15 +230,24 @@ fun! s:on_load(...)
         let g:titlestring = data['title']
     endif
 
-    for path in get(data, 'buffers')
+    for path in get(data, 'buffers', [])
         exec 'badd' path
     endfor
+
+    " Empty buffer [No Name]
+    if empty(expand('%')) && !&modified && line('$') <= 1 && empty(getline(1))
+        set bh=wipe
+    endif
+
+    if has_key(data, 'current')
+        exec 'edit' data['current']
+    endif
 endf
 
 " Load project
 fun! proj#load()
-    call s:on_load()
     sil! exe 'so' g:Proj['confdir'].'/session.vim'
+    call s:on_load()
     sil! exe 'so' g:Proj['confdir'].'/config.vim'
     let &viewdir = g:Proj['confdir'] . '/view'
     do User AfterProjLoaded
