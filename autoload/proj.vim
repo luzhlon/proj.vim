@@ -108,7 +108,7 @@ endf
 
 " Save view
 fun! proj#saveview()
-    if get(g:, 'proj_enable_view', 1)
+    if get(g:, 'proj#enable_view')
         try
             if empty(&bt) && &fdm == 'manual'
                 let o = &vop
