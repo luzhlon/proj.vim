@@ -1,4 +1,6 @@
 
+# Deprecated. Please use [vwm.nvim](https://github.com/luzhlon/vwm.nvim)
+
 vim project framework
 
 ## usage
